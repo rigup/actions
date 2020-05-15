@@ -1,0 +1,16 @@
+name: 'Delete Pre-releases'
+description: 'Delete all pre-releases before a specified git commit'
+inputs:
+  commit:
+    description: 'Commit hash indicating the start point for deleting pre-releases'
+    required: true
+  github_token:
+    description: 'Github access token'
+    required: true
+  prereleaseOnly:
+    default: 'false'
+    description: 'Only delete prereleases'
+    required: false
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
