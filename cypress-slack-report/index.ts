@@ -5,11 +5,13 @@ import { WebClient } from "@slack/web-api";
 
 async function run(): Promise<void> {
   try {
-    const tests_passed = core.getInput("tests_passed");
+    const tests_passed =
+      (core.getInput("tests_passed") || "").toString() === "true";
     const test_run_message = core.getInput("test_run_message");
     const slack_token = core.getInput("slack_token");
     const channels = core.getInput("channels");
-    const include_media = core.getInput("include_media");
+    const include_media =
+      (core.getInput("include_media") || "").toString() === "true";
     const workdir = core.getInput("workdir") || "cypress";
 
     const slack = new WebClient(slack_token);
