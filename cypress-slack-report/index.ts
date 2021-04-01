@@ -5,7 +5,6 @@ import { WebClient } from "@slack/web-api";
 
 async function run(): Promise<void> {
   try {
-    core.
     const tests_passed = core.getInput("tests_passed");
     const test_run_message = core.getInput("test_run_message");
     const slack_token = core.getInput("slack_token");
