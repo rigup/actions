@@ -3,6 +3,7 @@
 ## Available Actions
 
 ### [Delete Releases](./delete-releases/README.md)
+### [Cyress Slack Report](./cypress-slack-report/README.md)
 
 ## Development
 

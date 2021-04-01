@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:delete-releases": "ncc build delete-releases/index.js -o delete-releases/dist",
+    "build:cypress-slack-report": "ncc build cypress-slack-report/index.ts -o cypress-slack-report/dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,7 +22,9 @@
   "dependencies": {
     "@actions/core": "^1.2.4",
     "@actions/github": "^2.2.0",
-    "@octokit/rest": "^17.9.0"
+    "@octokit/rest": "^17.9.0",
+    "@slack/web-api": "^6.1.0",
+    "walk-sync": "^2.2.0"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.22.1"

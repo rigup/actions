@@ -1,0 +1,22 @@
+name: 'Cypress report'
+description: 'Test run report to slack'
+inputs:
+  tests_passed:
+    description: 'Boolean for pass or fail'
+    required: true
+  test_run_message:
+    description: 'Message to describe the context the test was executed in'
+    required: false
+  slack_token:
+    description: 'Slack app token'
+    required: true
+  channels:
+    description: 'Slack channel name'
+    required: true
+  include_media:
+    default: false
+    description: 'Should screenshots & videos be included in slack report'
+    required: false
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
