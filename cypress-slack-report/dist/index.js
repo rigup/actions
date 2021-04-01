@@ -4776,11 +4776,11 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const tests_passed = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("tests_passed");
+            const tests_passed = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("tests_passed") === "true";
             const test_run_message = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("test_run_message");
             const slack_token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("slack_token");
             const channels = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("channels");
-            const include_media = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("include_media");
+            const include_media = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("include_media") === "true";
             const workdir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("workdir") || "cypress";
             const slack = new _slack_web_api__WEBPACK_IMPORTED_MODULE_3__.WebClient(slack_token);
             const videos = walk_sync__WEBPACK_IMPORTED_MODULE_2__(workdir, { globs: ["**/*.mp4"] });
@@ -4809,9 +4809,7 @@ function run() {
             yield slack.chat.update({
                 ts: threadID,
                 channel: channelId,
-                text: ((tests_passed || "").toString() !== "true"
-                    ? "‼️ Failed"
-                    : "✅ Passed") +
+                text: (tests_passed ? "✅ Passed" : "‼️ Failed") +
                     " - " +
                     (test_run_message || "No test run message provided"),
             });
