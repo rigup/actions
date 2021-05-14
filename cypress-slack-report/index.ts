@@ -15,33 +15,44 @@ async function run(): Promise<void> {
     const slack = new WebClient(slack_token);
     const videos = walkSync(workdir, { globs: ["**/*.mp4"] });
     const screenshots = walkSync(workdir, { globs: ["**/*.png"] });
+    const logs = walkSync(workdir, { globs: ["**/*.txt"] });
 
     core.debug("Sending initial slack message");
     const result = await slack.chat.postMessage({
       text: `${test_run_message}`,
-      channel: channels,
+      channel: channels
     });
 
     const threadID = result.ts as string;
     const channelId = result.channel as string;
     if (include_media) {
       await Promise.all(
-        screenshots.map((screenshot) =>
+        screenshots.map(screenshot =>
           slack.files.upload({
             filename: screenshot,
             file: createReadStream(`${workdir}/${screenshot}`),
             thread_ts: threadID,
-            channels: channelId,
+            channels: channelId
           })
         )
       );
       await Promise.all(
-        videos.map((video) =>
+        videos.map(video =>
           slack.files.upload({
             filename: video,
             file: createReadStream(`${workdir}/${video}`),
             thread_ts: threadID,
-            channels: channelId,
+            channels: channelId
+          })
+        )
+      );
+      await Promise.all(
+        logs.map(log =>
+          slack.files.upload({
+            filename: log,
+            file: createReadStream(`${workdir}/${log}`),
+            thread_ts: threadID,
+            channels: channelId
           })
         )
       );
@@ -52,7 +63,7 @@ async function run(): Promise<void> {
       text:
         (tests_passed ? "✅ Passed" : "‼️ Failed") +
         " - " +
-        (test_run_message || "No test run message provided"),
+        (test_run_message || "No test run message provided")
     });
   } catch (error) {
     core.setFailed(error.message);
