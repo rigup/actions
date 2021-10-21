@@ -17,6 +17,10 @@ inputs:
     default: false
     description: 'Should screenshots & videos be included in slack report'
     required: false
+  workdir:
+    default: cypress
+    description: 'Working directory for cypress artifacts'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
