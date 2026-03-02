@@ -1,7 +1,62 @@
 import * as core from "@actions/core";
-import { createReadStream } from "fs";
+import { createReadStream, statSync } from "fs";
+import * as https from "https";
+import { URL } from "url";
 import * as walkSync from "walk-sync";
 import { WebClient } from "@slack/web-api";
+
+async function uploadToUrl(uploadUrl: string, filePath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const fileStream = createReadStream(filePath);
+    const fileSize = statSync(filePath).size;
+    const url = new URL(uploadUrl);
+
+    const options = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": fileSize
+      }
+    };
+
+    const req = https.request(options, res => {
+      if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+        resolve();
+      } else {
+        reject(new Error(`Upload failed with status ${res.statusCode}`));
+      }
+      res.resume();
+    });
+
+    req.on("error", reject);
+    fileStream.pipe(req);
+  });
+}
+
+async function uploadFileToSlack(
+  slack: WebClient,
+  filePath: string,
+  filename: string,
+  channelId: string,
+  threadID: string
+): Promise<void> {
+  const fileSize = statSync(filePath).size;
+
+  const urlResponse = (await slack.apiCall("files.getUploadURLExternal", {
+    filename,
+    length: fileSize
+  })) as unknown as { upload_url: string; file_id: string };
+
+  await uploadToUrl(urlResponse.upload_url, filePath);
+
+  await slack.apiCall("files.completeUploadExternal", {
+    files: [{ id: urlResponse.file_id }],
+    channel_id: channelId,
+    thread_ts: threadID
+  });
+}
 
 async function run(): Promise<void> {
   try {
@@ -25,38 +80,43 @@ async function run(): Promise<void> {
 
     const threadID = result.ts as string;
     const channelId = result.channel as string;
+
     if (include_media) {
       await Promise.all(
         screenshots.map(screenshot =>
-          slack.files.upload({
-            filename: screenshot,
-            file: createReadStream(`${workdir}/${screenshot}`),
-            thread_ts: threadID,
-            channels: channelId
-          })
+          uploadFileToSlack(
+            slack,
+            `${workdir}/${screenshot}`,
+            screenshot,
+            channelId,
+            threadID
+          )
         )
       );
       await Promise.all(
         videos.map(video =>
-          slack.files.upload({
-            filename: video,
-            file: createReadStream(`${workdir}/${video}`),
-            thread_ts: threadID,
-            channels: channelId
-          })
+          uploadFileToSlack(
+            slack,
+            `${workdir}/${video}`,
+            video,
+            channelId,
+            threadID
+          )
         )
       );
       await Promise.all(
         logs.map(log =>
-          slack.files.upload({
-            filename: log,
-            file: createReadStream(`${workdir}/${log}`),
-            thread_ts: threadID,
-            channels: channelId
-          })
+          uploadFileToSlack(
+            slack,
+            `${workdir}/${log}`,
+            log,
+            channelId,
+            threadID
+          )
         )
       );
     }
+
     await slack.chat.update({
       ts: threadID,
       channel: channelId,
